@@ -1,4 +1,4 @@
-import { checkPassword } from './security.js';
+import { checkPassword, isLockedOut, getLockoutTimeRemaining, handleFailedAttempt, resetFailedAttempts, getFailedAttempts } from './security.js';
 import { showInitialSetup } from './init.js';
 
 export function showLoginForm(root){
@@ -30,19 +30,89 @@ export function showLoginForm(root){
   const loginBtn = document.getElementById('loginBtn');
   const initLink = document.getElementById('initLink');
   const msg = document.getElementById('msg');
+  const pwdInput = document.getElementById('pwd');
+
+  function showMessage(text, type) {
+    msg.textContent = text;
+    msg.className = type === 'error' ? 'error-message' : 'success-message';
+    msg.classList.remove('hidden');
+    
+    if(type === 'success') {
+      setTimeout(() => {
+        msg.classList.add('hidden');
+      }, 3000);
+    }
+  }
+
+  function disableInterface() {
+    loginBtn.disabled = true;
+    pwdInput.disabled = true;
+    loginBtn.style.background = '#e53e3e';
+  }
+
+  function enableInterface() {
+    loginBtn.disabled = false;
+    pwdInput.disabled = false;
+    loginBtn.style.background = '#2563eb';
+    loginBtn.innerHTML = '<i class="ri-arrow-right-line"></i> Se connecter';
+  }
+
+  function checkLockoutStatus() {
+    if(isLockedOut()){
+      const remainingTime = getLockoutTimeRemaining();
+      disableInterface();
+      loginBtn.textContent = `Verrouillé (${remainingTime} min)`;
+      showMessage(`Compte verrouillé. Réessayez dans ${remainingTime} minute(s)`, 'error');
+      
+      const checkInterval = setInterval(() => {
+        if(!isLockedOut()){
+          clearInterval(checkInterval);
+          enableInterface();
+          msg.classList.add('hidden');
+        } else {
+          const newTime = getLockoutTimeRemaining();
+          loginBtn.textContent = `Verrouillé (${newTime} min)`;
+          msg.textContent = `Compte verrouillé. Réessayez dans ${newTime} minute(s)`;
+        }
+      }, 30000);
+    }
+  }
 
   loginBtn.onclick = async () => {
-    const pwd = document.getElementById('pwd').value.trim();
+    const pwd = pwdInput.value.trim();
+    
     if(!pwd) {
-      showMessage(msg, 'Veuillez saisir votre mot de passe', 'error');
+      showMessage('Veuillez saisir votre mot de passe', 'error');
+      return;
+    }
+    
+    if(isLockedOut()){
+      const remainingTime = getLockoutTimeRemaining();
+      showMessage(`Compte verrouillé. Réessayez dans ${remainingTime} minute(s)`, 'error');
       return;
     }
     
     const ok = await checkPassword(pwd);
+    
     if(ok){
-      location.hash = '#dashboard';
+      resetFailedAttempts();
+      showMessage('Connexion réussie !', 'success');
+      setTimeout(() => {
+        location.hash = '#dashboard';
+      }, 1000);
     } else {
-      showMessage(msg, 'Mot de passe incorrect', 'error');
+      const attempts = handleFailedAttempt();
+      const currentAttempts = getFailedAttempts();
+      
+      if(currentAttempts >= 3){
+        disableInterface();
+        loginBtn.textContent = 'Compte verrouillé';
+        showMessage('Trop de tentatives échouées. Compte verrouillé pendant 5 minutes.', 'error');
+        checkLockoutStatus();
+      } else {
+        const remainingAttempts = 3 - currentAttempts;
+        showMessage(`Mot de passe incorrect. ${remainingAttempts} tentative(s) restante(s)`, 'error');
+      }
     }
   };
 
@@ -50,16 +120,6 @@ export function showLoginForm(root){
     e.preventDefault();
     showInitialSetup(root);
   };
-}
 
-function showMessage(element, text, type) {
-  element.textContent = text;
-  element.className = type === 'error' ? 'error-message' : 'success-message';
-  element.classList.remove('hidden');
-  
-  if(type === 'success') {
-    setTimeout(() => {
-      element.classList.add('hidden');
-    }, 3000);
-  }
+  checkLockoutStatus();
 }
