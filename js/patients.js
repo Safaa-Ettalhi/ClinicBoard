@@ -85,7 +85,7 @@ function createPatientRow(patient) {
           </div>
         </div>
       </div>
-      <div class="table-cell contact-cell">
+      <div class="table-cell contact-cell" data-label="Contact">
         <div class="contact-info">
           ${patient.phone ? `
             <div class="contact-item">
@@ -101,19 +101,19 @@ function createPatientRow(patient) {
           ` : ''}
         </div>
       </div>
-      <div class="table-cell age-cell">
+      <div class="table-cell age-cell" data-label="Âge">
         ${patient.age || 0} ans
       </div>
-      <div class="table-cell blood-group-cell">
+      <div class="table-cell blood-group-cell" data-label="Groupe Sanguin">
         ${patient.bloodGroup || 'Non spécifié'}
       </div>
-      <div class="table-cell last-visit-cell">
+      <div class="table-cell last-visit-cell" data-label="Dernière Visite">
         ${lastVisit}
       </div>
-      <div class="table-cell status-cell">
+      <div class="table-cell status-cell" data-label="Statut">
         <span class="status-badge ${statusClass}">${statusText}</span>
       </div>
-      <div class="table-cell actions-cell">
+      <div class="table-cell actions-cell" data-label="Actions">
         <div class="action-buttons">
           <button class="action-btn view-btn" onclick="viewPatient('${patient.id}')" title="Voir">
             <i class="ri-eye-line"></i>
@@ -702,4 +702,14 @@ function createEmptySearchState() {
       <p>Essayez de modifier vos critères de recherche</p>
     </div>
   `;
+}
+
+function getStatusText(status) {
+  const statusMap = {
+    'scheduled': 'PROGRAMMÉ',
+    'completed': 'TERMINÉ',
+    'cancelled': 'ANNULÉ',
+    'no-show': 'NO-SHOW'
+  };
+  return statusMap[status] || 'PROGRAMMÉ';
 }
