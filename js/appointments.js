@@ -52,8 +52,11 @@ export function showAppointments(root) {
               <label class="input-label">Praticien</label>
             <select id="practitionerFilter">
               <option value="">Tous les praticiens</option>
-              <option value="Dr. Martin">Dr. Martin</option>
-              <option value="Dr. Dupont">Dr. Dupont</option>
+              <option value="Dr. Ahmed Benali">Dr. Ahmed Benali</option>
+              <option value="Dr. Fatima Zahra">Dr. Fatima Zahra</option>
+              <option value="Dr. Youssef Alami">Dr. Youssef Alami</option>
+              <option value="Dr. Aicha Mansouri">Dr. Aicha Mansouri</option>
+              <option value="Dr. Omar Tazi">Dr. Omar Tazi</option>
             </select>
           </div>
           <div class="filter-group">
@@ -128,7 +131,7 @@ export function showAppointments(root) {
           <div class="section-header">
             <h3>Planning du jour</h3>
             <p>Consultations et rendez-vous programmés</p>
-          </div>
+        </div>
         
         <div class="appointments-container">
           <div class="appointments-list active" id="appointmentsList">
@@ -141,7 +144,7 @@ export function showAppointments(root) {
           <div class="agenda-view" id="agendaView">
             ${createAgendaView(appointments, patients, today)}
           </div>
-        </div>
+          </div>
         </div>
       </div>
     </div>
@@ -236,38 +239,38 @@ function createAgendaView(appointments, patients, selectedDate) {
         <div class="appointments-column-header">Rendez-vous</div>
       </div>
       <div class="agenda-body">
-        ${timeSlots.map(slot => `
+      ${timeSlots.map(slot => `
           <div class="agenda-time-slot">
-            <div class="time-label">${slot.time}</div>
-            <div class="appointments-slot">
+          <div class="time-label">${slot.time}</div>
+          <div class="appointments-slot">
               ${slot.appointments.length > 0 ? 
                 slot.appointments.map(appointment => {
-                  const patient = patients.find(p => p.id === appointment.patientId);
+              const patient = patients.find(p => p.id === appointment.patientId);
                   const appointmentDate = new Date(appointment.date);
                   const duration = appointment.duration || 30;
                   
-                  return `
-                    <div class="agenda-appointment ${appointment.status || 'scheduled'}" 
-                         onclick="editAppointment('${appointment.id}')">
+              return `
+                <div class="agenda-appointment ${appointment.status || 'scheduled'}" 
+                     onclick="editAppointment('${appointment.id}')">
                       <div class="agenda-appointment-header">
                         <span class="agenda-time">${appointmentDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
                         <span class="agenda-duration">${duration}min</span>
                       </div>
-                      <div class="agenda-patient">${patient?.fullName || 'Patient inconnu'}</div>
-                      <div class="agenda-type">${appointment.type || 'Consultation'}</div>
-                      <div class="agenda-practitioner">${appointment.practitioner || 'Dr. Martin'}</div>
+                  <div class="agenda-patient">${patient?.fullName || 'Patient inconnu'}</div>
+                  <div class="agenda-type">${appointment.type || 'Consultation'}</div>
+                      <div class="agenda-practitioner">${appointment.practitioner || 'Lamiaa Ricouch'}</div>
                       <div class="agenda-status">
                         <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
                       </div>
-                    </div>
-                  `;
+                </div>
+              `;
                 }).join('') :
                 `<div class="empty-slot">Libre</div>`
               }
             </div>
           </div>
         `).join('')}
-      </div>
+        </div>
     </div>
   `;
 }
@@ -434,8 +437,11 @@ function createAppointmentModal(appointment = null) {
         <div class="input-group">
           <label class="input-label">Praticien</label>
           <select id="practitioner">
-            <option value="Dr. Martin" ${appointment?.practitioner === 'Dr. Martin' ? 'selected' : ''}>Dr. Martin</option>
-            <option value="Dr. Dupont" ${appointment?.practitioner === 'Dr. Dupont' ? 'selected' : ''}>Dr. Dupont</option>
+            <option value="Dr. Ahmed Benali" ${appointment?.practitioner === 'Dr. Ahmed Benali' ? 'selected' : ''}>Dr. Ahmed Benali</option>
+            <option value="Dr. Fatima Zahra" ${appointment?.practitioner === 'Dr. Fatima Zahra' ? 'selected' : ''}>Dr. Fatima Zahra</option>
+            <option value="Dr. Youssef Alami" ${appointment?.practitioner === 'Dr. Youssef Alami' ? 'selected' : ''}>Dr. Youssef Alami</option>
+            <option value="Dr. Aicha Mansouri" ${appointment?.practitioner === 'Dr. Aicha Mansouri' ? 'selected' : ''}>Dr. Aicha Mansouri</option>
+            <option value="Dr. Omar Tazi" ${appointment?.practitioner === 'Dr. Omar Tazi' ? 'selected' : ''}>Dr. Omar Tazi</option>
           </select>
         </div>
         <div class="input-group">
@@ -443,8 +449,15 @@ function createAppointmentModal(appointment = null) {
           <input type="text" id="room" value="${appointment?.room || ''}" placeholder="Ex: Salle 1">
         </div>
         <div class="input-group">
-          <label class="input-label">Durée (minutes)</label>
-          <input type="number" id="duration" value="${appointment?.duration || 30}" min="15" max="120" step="15">
+          <label class="input-label">Durée</label>
+          <select id="duration">
+            <option value="15" ${appointment?.duration === 15 ? 'selected' : ''}>15 minutes</option>
+            <option value="30" ${appointment?.duration === 30 ? 'selected' : ''}>30 minutes</option>
+            <option value="45" ${appointment?.duration === 45 ? 'selected' : ''}>45 minutes</option>
+            <option value="60" ${appointment?.duration === 60 ? 'selected' : ''}>1 heure</option>
+            <option value="90" ${appointment?.duration === 90 ? 'selected' : ''}>1h30</option>
+            <option value="120" ${appointment?.duration === 120 ? 'selected' : ''}>2 heures</option>
+          </select>
         </div>
         <div class="input-group">
           <label class="input-label">Statut</label>
@@ -601,7 +614,7 @@ function viewAppointment(appointmentId) {
                     </div>
                     <div class="detail-item">
                       <label>Praticien</label>
-                      <span>${appointment.practitioner || 'Dr. Martin'}</span>
+                      <span>${appointment.practitioner || 'Dr. Ahmed Benali'}</span>
                     </div>
                     <div class="detail-item">
                       <label>Salle</label>
@@ -776,7 +789,7 @@ function getPatientAppointmentHistory(patientId, appointments) {
             </div>
             <div class="history-content">
               <h4>${appointment.type || 'Consultation'}</h4>
-              <p>${appointment.practitioner || 'Dr. Martin'} - ${appointment.room || 'Salle non spécifiée'}</p>
+              <p>${appointment.practitioner || 'Dr. Ahmed Benali'} - ${appointment.room || 'Salle non spécifiée'}</p>
               ${appointment.notes ? `<p class="notes">${appointment.notes}</p>` : ''}
             </div>
             <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
