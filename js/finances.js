@@ -54,16 +54,6 @@ export function showFinances(root) {
           <h1 class="content-title">Finances</h1>
           <p class="content-subtitle">Gestion financière du cabinet</p>
         </div>
-        <div class="header-stats">
-          <div class="stat-badge">
-            <i class="ri-money-dollar-box-line"></i>
-            <span>${revenues.length} recettes</span>
-          </div>
-          <div class="stat-badge">
-            <i class="ri-money-euro-box-line"></i>
-            <span>${expenses.length} dépenses</span>
-          </div>
-        </div>
         <div class="header-actions">
           <button id="addRevenueBtn" class="btn-primary">
             <i class="ri-money-dollar-box-line"></i>
