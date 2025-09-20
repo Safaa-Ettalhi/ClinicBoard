@@ -2,7 +2,13 @@ import { logout } from './security.js';
 
 export function createNavigation() {
   return `
-    <nav class="sidebar">
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <i class="ri-menu-line"></i>
+    </button>
+    
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <nav class="sidebar" id="sidebar">
       <div class="nav-header">
         <div class="nav-logo">
           <div class="logo-icon">
@@ -63,4 +69,41 @@ export function updateActiveNavItem(activePage) {
   });
   
   window.logout = logout;
+  setupMobileNavigation();
+}
+
+function setupMobileNavigation() {
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  
+  if (!mobileMenuToggle || !sidebar || !sidebarOverlay) return;
+  
+  function toggleSidebar() {
+    sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('open');
+  }
+  
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('open');
+  }
+  
+  mobileMenuToggle.addEventListener('click', toggleSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+  
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    });
+  });
+  
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      closeSidebar();
+    }
+  });
 }
