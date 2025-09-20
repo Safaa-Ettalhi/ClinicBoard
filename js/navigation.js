@@ -1,3 +1,5 @@
+import { logout } from './security.js';
+
 export function createNavigation() {
   return `
     <nav class="sidebar">
@@ -42,7 +44,7 @@ export function createNavigation() {
             <p class="user-role">Médecin généraliste</p>
           </div>
         </div>
-        <a href="#login" class="logout-link">
+        <a href="#" class="logout-link" onclick="logout()">
           <i class="ri-logout-box-line"></i>
           <span>Déconnexion</span>
         </a>
@@ -59,4 +61,6 @@ export function updateActiveNavItem(activePage) {
       item.classList.add('active');
     }
   });
+  
+  window.logout = logout;
 }

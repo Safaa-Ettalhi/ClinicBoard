@@ -73,3 +73,20 @@ export function getFailedAttempts(){
   const data = getData();
   return data.auth.failedAttempts || 0;
 }
+
+export function isAuthenticated(){
+  return sessionStorage.getItem('clinicApp:authenticated') === 'true';
+}
+
+export function setAuthenticated(authenticated = true){
+  if(authenticated){
+    sessionStorage.setItem('clinicApp:authenticated', 'true');
+  } else {
+    sessionStorage.removeItem('clinicApp:authenticated');
+  }
+}
+
+export function logout(){
+  setAuthenticated(false);
+  location.hash = '#login';
+}

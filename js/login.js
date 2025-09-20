@@ -1,4 +1,4 @@
-import { checkPassword, isLockedOut, getLockoutTimeRemaining, handleFailedAttempt, resetFailedAttempts, getFailedAttempts } from './security.js';
+import { checkPassword, isLockedOut, getLockoutTimeRemaining, handleFailedAttempt, resetFailedAttempts, getFailedAttempts, setAuthenticated } from './security.js';
 import { showInitialSetup } from './init.js';
 
 export function showLoginForm(root){
@@ -96,6 +96,7 @@ export function showLoginForm(root){
     
     if(ok){
       resetFailedAttempts();
+      setAuthenticated(true);
       showMessage('Connexion réussie !', 'success');
       setTimeout(() => {
         location.hash = '#dashboard';
