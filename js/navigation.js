@@ -40,8 +40,8 @@ export function createNavigation() {
             <i class="ri-user-line"></i>
           </div>
           <div class="user-info">
-            <p class="user-name">Dr. Martin</p>
-            <p class="user-role">Médecin généraliste</p>
+            <p class="user-name">Lamiaa Ricouch</p>
+            <p class="user-role">Secrétaire</p>
           </div>
         </div>
         <a href="#" class="logout-link" onclick="logout()">
