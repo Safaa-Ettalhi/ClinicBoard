@@ -407,7 +407,7 @@ function createHistoryItem(appointment) {
       </div>
       <div class="history-content">
         <h4>${appointment.type || 'Consultation'}</h4>
-        <p>${appointment.practitioner || 'Dr. Martin'} - ${appointment.room || 'Salle non spécifiée'}</p>
+        <p>${appointment.practitioner || 'Dr. Ahmed Benali'} - ${appointment.room || 'Salle non spécifiée'}</p>
         ${appointment.notes ? `<p class="notes">${appointment.notes}</p>` : ''}
       </div>
       <div class="history-status">
@@ -553,7 +553,7 @@ function createPatientViewModal(patient) {
                           </div>
                           <div class="appointment-details">
                             <span class="type">${appointment.type || 'Consultation'}</span>
-                            <span class="practitioner">${appointment.practitioner || 'Dr. Martin'}</span>
+                            <span class="practitioner">${appointment.practitioner || 'Dr. Ahmed Benali'}</span>
                           </div>
                           <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
                         </div>
@@ -594,7 +594,7 @@ function createPatientViewModal(patient) {
                         </div>
                         <div class="history-content">
                           <h4>${appointment.type || 'Consultation'}</h4>
-                          <p>${appointment.practitioner || 'Dr. Martin'} - ${appointment.room || 'Salle non spécifiée'}</p>
+                          <p>${appointment.practitioner || 'Dr. Ahmed Benali'} - ${appointment.room || 'Salle non spécifiée'}</p>
                           ${appointment.notes ? `<p class="notes">${appointment.notes}</p>` : ''}
                         </div>
                         <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
