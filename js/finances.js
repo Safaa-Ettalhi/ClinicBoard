@@ -84,7 +84,7 @@ export function showFinances(root) {
             </div>
             <div class="stat-info">
               <h3 class="stat-title">Recettes du mois</h3>
-              <p class="stat-value">${totalRevenues.toFixed(2)} €</p>
+              <p class="stat-value">${totalRevenues.toFixed(2)} DH</p>
               <p class="stat-subtitle">${monthlyRevenues.length} transactions</p>
               ${revenueTrend !== 0 ? `
                 <p class="stat-trend ${revenueTrend > 0 ? 'positive' : 'negative'}">
@@ -101,7 +101,7 @@ export function showFinances(root) {
             </div>
             <div class="stat-info">
               <h3 class="stat-title">Dépenses du mois</h3>
-              <p class="stat-value">${totalExpenses.toFixed(2)} €</p>
+              <p class="stat-value">${totalExpenses.toFixed(2)} DH</p>
               <p class="stat-subtitle">${monthlyExpenses.length} transactions</p>
               ${expenseTrend !== 0 ? `
                 <p class="stat-trend ${expenseTrend > 0 ? 'negative' : 'positive'}">
@@ -118,7 +118,7 @@ export function showFinances(root) {
             </div>
             <div class="stat-info">
               <h3 class="stat-title">Marge du mois</h3>
-              <p class="stat-value">${margin.toFixed(2)} €</p>
+              <p class="stat-value">${margin.toFixed(2)} DH</p>
               <p class="stat-subtitle">${margin >= 0 ? 'Bénéfice' : 'Déficit'}</p>
             </div>
           </div>
@@ -127,13 +127,13 @@ export function showFinances(root) {
         <div class="budget-section">
           <div class="budget-header">
             <h3>Objectif mensuel</h3>
-            <div class="budget-amount">${monthlyGoal.toFixed(2)} €</div>
+            <div class="budget-amount">${monthlyGoal.toFixed(2)} DH</div>
           </div>
           <div class="progress-bar">
             <div class="progress-fill" style="width: ${goalProgress}%"></div>
           </div>
           <div class="progress-info">
-            <span>${totalRevenues.toFixed(2)} € / ${monthlyGoal.toFixed(2)} €</span>
+            <span>${totalRevenues.toFixed(2)} DH / ${monthlyGoal.toFixed(2)} DH</span>
             <span class="progress-percentage">${goalProgress.toFixed(1)}%</span>
           </div>
         </div>
@@ -189,7 +189,7 @@ function createRevenueCard(revenue) {
         <p class="transaction-date">${revenueDate.toLocaleDateString('fr-FR')}</p>
       </div>
       <div class="transaction-amount positive">
-        +${revenue.amount.toFixed(2)} €
+        +${revenue.amount.toFixed(2)} DH
       </div>
     </div>
   `;
@@ -209,7 +209,7 @@ function createExpenseCard(expense) {
         <p class="transaction-date">${expenseDate.toLocaleDateString('fr-FR')}</p>
       </div>
       <div class="transaction-amount negative">
-        -${expense.amount.toFixed(2)} €
+        -${expense.amount.toFixed(2)} DH
       </div>
     </div>
   `;
@@ -255,7 +255,7 @@ function createAnalyticsView(revenues, expenses) {
               .map(([category, amount]) => `
                 <div class="category-item">
                   <span class="category-name">${category}</span>
-                  <span class="category-amount">${amount.toFixed(2)} €</span>
+                  <span class="category-amount">${amount.toFixed(2)} DH</span>
                 </div>
               `).join('')}
           </div>
@@ -269,7 +269,7 @@ function createAnalyticsView(revenues, expenses) {
               .map(([method, amount]) => `
                 <div class="method-item">
                   <span class="method-name">${method}</span>
-                  <span class="method-amount">${amount.toFixed(2)} €</span>
+                  <span class="method-amount">${amount.toFixed(2)} DH</span>
                 </div>
               `).join('')}
           </div>

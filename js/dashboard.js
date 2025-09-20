@@ -22,7 +22,7 @@ export function showDashboard(root){
             </div>
             <div class="stat-info">
               <h3 class="stat-title">Chiffre d'affaires mensuel</h3>
-              <p class="stat-value">${stats.monthlyRevenues.toFixed(2)} €</p>
+              <p class="stat-value">${stats.monthlyRevenues.toFixed(2)} DH</p>
             </div>
           </div>
           
@@ -32,7 +32,7 @@ export function showDashboard(root){
             </div>
             <div class="stat-info">
               <h3 class="stat-title">Total dépenses</h3>
-              <p class="stat-value">${stats.monthlyExpenses.toFixed(2)} €</p>
+              <p class="stat-value">${stats.monthlyExpenses.toFixed(2)} DH</p>
             </div>
           </div>
           
@@ -42,7 +42,7 @@ export function showDashboard(root){
             </div>
             <div class="stat-info">
               <h3 class="stat-title">Marge (recettes - dépenses)</h3>
-              <p class="stat-value">${stats.margin.toFixed(2)} €</p>
+              <p class="stat-value">${stats.margin.toFixed(2)} DH</p>
             </div>
           </div>
           
