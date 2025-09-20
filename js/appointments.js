@@ -12,50 +12,44 @@ export function showAppointments(root) {
     return appointmentDate.toDateString() === today.toDateString();
   });
   
+  const confirmedAppointments = appointments.filter(a => a.status === 'completed').length;
+  const pendingAppointments = appointments.filter(a => a.status === 'scheduled').length;
+  const urgentAppointments = appointments.filter(a => a.type === 'urgence').length;
+  
   root.innerHTML = `
     ${createNavigation()}
     <div class="main-content">
       <div class="content-header">
         <div class="header-info">
-          <h1 class="content-title">Rendez-vous</h1>
-          <p class="content-subtitle">Planification et gestion des rendez-vous</p>
-        </div>
-        <div class="header-stats">
-          <div class="stat-badge">
-            <i class="ri-calendar-line"></i>
-            <span>${appointments.length} RDV</span>
-          </div>
-          <div class="stat-badge today">
-            <i class="ri-calendar-check-line"></i>
-            <span>${todayAppointments.length} aujourd'hui</span>
-          </div>
+          <h1 class="content-title">Agenda des Rendez-vous</h1>
+          <p class="content-subtitle">Gérez vos consultations quotidiennes</p>
         </div>
         <button id="addAppointmentBtn" class="btn-primary">
-          <i class="ri-calendar-add-line"></i>
-          Nouveau Rendez-vous
+          <i class="ri-add-line"></i>
+          Nouveau RDV
         </button>
       </div>
       
       <div class="content-body">
-        <div class="view-controls">
-          <div class="view-tabs">
-            <button class="view-tab active" data-view="list">Liste</button>
-            <button class="view-tab" data-view="agenda">Agenda</button>
-          </div>
+        <div class="date-navigation-section">
           <div class="date-navigation">
             <button id="prevDay" class="btn-nav">
               <i class="ri-arrow-left-line"></i>
             </button>
+            <div class="date-info">
             <span id="currentDate" class="current-date">${today.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              <span class="appointments-count">${todayAppointments.length} rendez-vous programmés</span>
+            </div>
             <button id="nextDay" class="btn-nav">
               <i class="ri-arrow-right-line"></i>
             </button>
           </div>
         </div>
         
+        <div class="filters-and-views">
         <div class="filters-section">
           <div class="filter-group">
-            <label class="input-label">Filtrer par praticien</label>
+              <label class="input-label">Praticien</label>
             <select id="practitionerFilter">
               <option value="">Tous les praticiens</option>
               <option value="Dr. Martin">Dr. Martin</option>
@@ -63,7 +57,7 @@ export function showAppointments(root) {
             </select>
           </div>
           <div class="filter-group">
-            <label class="input-label">Filtrer par statut</label>
+              <label class="input-label">Statut</label>
             <select id="statusFilter">
               <option value="">Tous les statuts</option>
               <option value="scheduled">Programmé</option>
@@ -73,11 +67,73 @@ export function showAppointments(root) {
             </select>
           </div>
         </div>
+          
+          <div class="view-controls">
+            <div class="view-tabs">
+              <button class="view-tab active" data-view="list">
+                <i class="ri-list-check"></i>
+                Liste
+              </button>
+              <button class="view-tab" data-view="agenda">
+                <i class="ri-calendar-line"></i>
+                Agenda
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="appointment-stats">
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <i class="ri-calendar-line"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">${appointments.length}</div>
+              <div class="stat-label">Total</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <i class="ri-check-line"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">${confirmedAppointments}</div>
+              <div class="stat-label">Confirmés</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon orange">
+              <i class="ri-time-line"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">${pendingAppointments}</div>
+              <div class="stat-label">En attente</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon red">
+              <i class="ri-alarm-warning-line"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">${urgentAppointments}</div>
+              <div class="stat-label">Urgences</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="daily-planning-section">
+          <div class="section-header">
+            <h3>Planning du jour</h3>
+            <p>Consultations et rendez-vous programmés</p>
+          </div>
         
         <div class="appointments-container">
           <div class="appointments-list active" id="appointmentsList">
-            ${appointments.length > 0 ? 
-              appointments.map(appointment => createAppointmentCard(appointment, patients)).join('') :
+              ${todayAppointments.length > 0 ? 
+                todayAppointments.map(appointment => createAppointmentCard(appointment, patients)).join('') :
               createEmptyAppointmentsState()
             }
           </div>
@@ -85,6 +141,7 @@ export function showAppointments(root) {
           <div class="agenda-view" id="agendaView">
             ${createAgendaView(appointments, patients, today)}
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -98,52 +155,49 @@ export function showAppointments(root) {
 function createAppointmentCard(appointment, patients) {
   const patient = patients.find(p => p.id === appointment.patientId);
   const appointmentDate = new Date(appointment.date);
-  const isToday = appointmentDate.toDateString() === new Date().toDateString();
-  const isPast = appointmentDate < new Date();
+  const timeString = appointmentDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+  const duration = appointment.duration || 30;
   
   return `
-    <div class="appointment-card ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}" data-appointment-id="${appointment.id}">
-      <div class="appointment-time">
-        <div class="time-display">
-          ${appointmentDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
-        </div>
-        <div class="date-display">
-          ${appointmentDate.toLocaleDateString('fr-FR')}
-        </div>
-        ${isToday ? '<div class="today-badge">Aujourd\'hui</div>' : ''}
+    <div class="appointment-card" data-appointment-id="${appointment.id}">
+      <div class="appointment-time-section">
+        <div class="time-display">${timeString}</div>
+        <div class="duration-display">${duration}min</div>
       </div>
-      <div class="appointment-info">
+      
+      <div class="appointment-content">
+        <div class="patient-info">
         <h3 class="patient-name">${patient?.fullName || 'Patient inconnu'}</h3>
-        <div class="appointment-details">
-          <div class="detail-item">
-            <i class="ri-stethoscope-line"></i>
-            <span>${appointment.type || 'Consultation'}</span>
+          <p class="appointment-type">${appointment.type || 'Consultation générale'}</p>
+          <p class="patient-id">${patient?.id?.substring(0, 3) || 'N/A'}</p>
           </div>
-          <div class="detail-item">
-            <i class="ri-user-line"></i>
-            <span>${appointment.practitioner || 'Dr. Martin'}</span>
-          </div>
-          <div class="detail-item">
-            <i class="ri-building-line"></i>
-            <span>Salle: ${appointment.room || 'Non spécifiée'}</span>
-          </div>
-          <div class="detail-item">
+        
+        <div class="appointment-status">
+          <div class="status-info">
             <i class="ri-time-line"></i>
-            <span>${appointment.duration || 30} min</span>
+            <span class="status-text">${getStatusText(appointment.status || 'scheduled')}</span>
           </div>
+          ${patient?.phone ? `
+            <div class="phone-info">
+              <i class="ri-phone-line"></i>
+              <span>${patient.phone}</span>
+        </div>
+          ` : ''}
         </div>
       </div>
-      <div class="appointment-status">
-        <div class="status-badge ${appointment.status || 'scheduled'}">
-          ${getStatusText(appointment.status || 'scheduled')}
-        </div>
-      </div>
+      
       <div class="appointment-actions">
-        <button class="btn-action btn-edit" onclick="editAppointment('${appointment.id}')" title="Modifier">
+        <button class="action-btn phone-btn" onclick="callPatient('${patient?.phone || ''}')" title="Appeler">
+          <i class="ri-phone-line"></i>
+        </button>
+        <button class="action-btn edit-btn" onclick="editAppointment('${appointment.id}')" title="Modifier">
           <i class="ri-edit-line"></i>
         </button>
-        <button class="btn-action btn-delete" onclick="handleDeleteAppointment('${appointment.id}')" title="Supprimer">
-          <i class="ri-delete-bin-line"></i>
+        <button class="action-btn view-btn" onclick="viewAppointment('${appointment.id}')" title="Voir détails">
+          <i class="ri-eye-line"></i>
+        </button>
+        <button class="action-btn delete-btn" onclick="handleDeleteAppointment('${appointment.id}')" title="Supprimer">
+          <i class="ri-close-line"></i>
         </button>
       </div>
     </div>
@@ -176,41 +230,56 @@ function createAgendaView(appointments, patients, selectedDate) {
   });
   
   return `
-    <div class="agenda-grid">
-      ${timeSlots.map(slot => `
-        <div class="time-slot">
-          <div class="time-label">${slot.time}</div>
-          <div class="appointments-slot">
-            ${slot.appointments.map(appointment => {
-              const patient = patients.find(p => p.id === appointment.patientId);
-              return `
-                <div class="agenda-appointment ${appointment.status || 'scheduled'}" 
-                     onclick="editAppointment('${appointment.id}')">
-                  <div class="agenda-patient">${patient?.fullName || 'Patient inconnu'}</div>
-                  <div class="agenda-type">${appointment.type || 'Consultation'}</div>
-                  <div class="agenda-practitioner">${appointment.practitioner || 'Dr. Martin'}</div>
-                </div>
-              `;
-            }).join('')}
+    <div class="agenda-timeline">
+      <div class="agenda-header">
+        <div class="time-column-header">Heure</div>
+        <div class="appointments-column-header">Rendez-vous</div>
+      </div>
+      <div class="agenda-body">
+        ${timeSlots.map(slot => `
+          <div class="agenda-time-slot">
+            <div class="time-label">${slot.time}</div>
+            <div class="appointments-slot">
+              ${slot.appointments.length > 0 ? 
+                slot.appointments.map(appointment => {
+                  const patient = patients.find(p => p.id === appointment.patientId);
+                  const appointmentDate = new Date(appointment.date);
+                  const duration = appointment.duration || 30;
+                  
+                  return `
+                    <div class="agenda-appointment ${appointment.status || 'scheduled'}" 
+                         onclick="editAppointment('${appointment.id}')">
+                      <div class="agenda-appointment-header">
+                        <span class="agenda-time">${appointmentDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+                        <span class="agenda-duration">${duration}min</span>
+                      </div>
+                      <div class="agenda-patient">${patient?.fullName || 'Patient inconnu'}</div>
+                      <div class="agenda-type">${appointment.type || 'Consultation'}</div>
+                      <div class="agenda-practitioner">${appointment.practitioner || 'Dr. Martin'}</div>
+                      <div class="agenda-status">
+                        <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
+                      </div>
+                    </div>
+                  `;
+                }).join('') :
+                `<div class="empty-slot">Libre</div>`
+              }
+            </div>
           </div>
-        </div>
-      `).join('')}
+        `).join('')}
+      </div>
     </div>
   `;
 }
 
 function createEmptyAppointmentsState() {
   return `
-    <div class="empty-state">
+    <div class="empty-appointments-state">
       <div class="empty-icon">
         <i class="ri-calendar-line"></i>
       </div>
-      <h3>Aucun rendez-vous programmé</h3>
-      <p>Commencez par planifier votre premier rendez-vous</p>
-      <button class="btn-primary" onclick="document.getElementById('addAppointmentBtn').click()">
-        <i class="ri-calendar-add-line"></i>
-        Planifier un rendez-vous
-      </button>
+      <h3>Aucun rendez-vous aujourd'hui</h3>
+      <p>Commencez par ajouter votre premier rendez-vous</p>
     </div>
   `;
 }
@@ -240,6 +309,8 @@ function setupAppointmentsEventListeners() {
   
   window.editAppointment = editAppointment;
   window.handleDeleteAppointment = handleDeleteAppointment;
+  window.viewAppointment = viewAppointment;
+  window.callPatient = callPatient;
 }
 
 let currentDate = new Date();
@@ -267,6 +338,47 @@ function updateDateDisplay() {
       month: 'long', 
       day: 'numeric' 
     });
+  
+  const appointments = getAppointments();
+  const dayAppointments = appointments.filter(a => {
+    const appointmentDate = new Date(a.date);
+    return appointmentDate.toDateString() === currentDate.toDateString();
+  });
+  
+  const appointmentsCount = document.querySelector('.appointments-count');
+  if (appointmentsCount) {
+    appointmentsCount.textContent = `${dayAppointments.length} rendez-vous programmés`;
+  }
+}
+
+function updateAppointmentsList() {
+  const appointments = getAppointments();
+  const patients = getPatients();
+  
+  const dayAppointments = appointments.filter(a => {
+    const appointmentDate = new Date(a.date);
+    return appointmentDate.toDateString() === currentDate.toDateString();
+  });
+  
+  const practitionerFilter = document.getElementById('practitionerFilter')?.value || '';
+  const statusFilter = document.getElementById('statusFilter')?.value || '';
+  
+  let filteredAppointments = dayAppointments;
+  
+  if (practitionerFilter) {
+    filteredAppointments = filteredAppointments.filter(a => a.practitioner === practitionerFilter);
+  }
+  
+  if (statusFilter) {
+    filteredAppointments = filteredAppointments.filter(a => a.status === statusFilter);
+  }
+  
+  const appointmentsList = document.getElementById('appointmentsList');
+  if (appointmentsList && appointmentsList.classList.contains('active')) {
+    appointmentsList.innerHTML = filteredAppointments.length > 0 ? 
+      filteredAppointments.map(appointment => createAppointmentCard(appointment, patients)).join('') :
+      createEmptyAppointmentsState();
+  }
 }
 
 function updateAgendaView() {
@@ -416,31 +528,270 @@ function handleDeleteAppointment(appointmentId) {
 function navigateDate(direction) {
   currentDate.setDate(currentDate.getDate() + direction);
   updateDateDisplay();
+  updateAppointmentsList();
   updateAgendaView();
 }
 
 
 function handleFilter() {
-  const practitionerFilter = document.getElementById('practitionerFilter').value;
-  const statusFilter = document.getElementById('statusFilter').value;
+  updateAppointmentsList();
+}
+
+function viewAppointment(appointmentId) {
   const appointments = getAppointments();
   const patients = getPatients();
-
-  let filteredAppointments = appointments;
-
-  if (practitionerFilter) {
-    filteredAppointments = filteredAppointments.filter(a => a.practitioner === practitionerFilter);
+  const appointment = appointments.find(a => a.id === appointmentId);
+  
+  if (appointment) {
+    const patient = patients.find(p => p.id === appointment.patientId);
+    const appointmentDate = new Date(appointment.date);
+    const endTime = new Date(appointmentDate.getTime() + (appointment.duration || 30) * 60000);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content appointment-details-modal">
+        <div class="modal-header">
+          <div class="appointment-header-info">
+            <div class="appointment-icon">
+              <i class="ri-calendar-check-line"></i>
+            </div>
+            <div class="appointment-header-details">
+              <h2>Détails du rendez-vous</h2>
+              <p class="appointment-id">ID: ${appointment.id.substring(0, 8).toUpperCase()}</p>
+              <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
+            </div>
+          </div>
+          <button class="modal-close">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="appointment-details-tabs">
+            <div class="tab-buttons">
+              <button class="tab-btn active" data-tab="info">Informations</button>
+              <button class="tab-btn" data-tab="patient">Patient</button>
+              <button class="tab-btn" data-tab="medical">Médical</button>
+              <button class="tab-btn" data-tab="history">Historique</button>
+            </div>
+            
+            <div class="tab-content active" id="info-tab">
+              <div class="detail-sections">
+                <div class="detail-section">
+                  <h3><i class="ri-calendar-line"></i> Informations du rendez-vous</h3>
+                  <div class="detail-grid">
+                    <div class="detail-item">
+                      <label>Date</label>
+                      <span>${appointmentDate.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Heure de début</label>
+                      <span class="time-display">${appointmentDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Heure de fin</label>
+                      <span class="time-display">${endTime.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Durée</label>
+                      <span>${appointment.duration || 30} minutes</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Type de consultation</label>
+                      <span>${appointment.type || 'Consultation générale'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Praticien</label>
+                      <span>${appointment.practitioner || 'Dr. Martin'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Salle</label>
+                      <span>${appointment.room || 'Non spécifiée'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Statut</label>
+                      <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                ${appointment.notes ? `
+                  <div class="detail-section">
+                    <h3><i class="ri-file-text-line"></i> Notes du rendez-vous</h3>
+                    <div class="notes-content">
+                      <p>${appointment.notes}</p>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            <div class="tab-content" id="patient-tab">
+              <div class="detail-sections">
+                <div class="detail-section">
+                  <h3><i class="ri-user-line"></i> Informations du patient</h3>
+                  <div class="detail-grid">
+                    <div class="detail-item">
+                      <label>Nom complet</label>
+                      <span>${patient?.fullName || 'Patient inconnu'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Âge</label>
+                      <span>${patient?.age || 0} ans</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Téléphone</label>
+                      <span>${patient?.phone || 'Non renseigné'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Email</label>
+                      <span>${patient?.email || 'Non renseigné'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Groupe sanguin</label>
+                      <span class="blood-group">${patient?.bloodGroup || 'Non spécifié'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Statut patient</label>
+                      <span class="status-badge ${patient?.status || 'active'}">${patient?.status === 'active' ? 'ACTIF' : 'INACTIF'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                ${patient?.notes ? `
+                  <div class="detail-section">
+                    <h3><i class="ri-file-text-line"></i> Notes du patient</h3>
+                    <div class="notes-content">
+                      <p>${patient.notes}</p>
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            <div class="tab-content" id="medical-tab">
+              <div class="detail-sections">
+                <div class="detail-section">
+                  <h3><i class="ri-heart-pulse-line"></i> Informations médicales</h3>
+                  <div class="detail-grid">
+                    <div class="detail-item">
+                      <label>Allergies</label>
+                      <span>${patient?.allergies || 'Aucune connue'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Médicaments actuels</label>
+                      <span>${patient?.medications || 'Aucun'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Antécédents médicaux</label>
+                      <span>${patient?.medicalHistory || 'Aucun'}</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Dernière visite</label>
+                      <span>${patient?.lastVisit ? new Date(patient.lastVisit).toLocaleDateString('fr-FR') : 'Jamais'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="tab-content" id="history-tab">
+              <div class="detail-sections">
+                <div class="detail-section">
+                  <h3><i class="ri-history-line"></i> Historique des rendez-vous</h3>
+                  <div class="appointment-history">
+                    ${patient ? getPatientAppointmentHistory(patient.id, appointments) : '<p>Aucun historique disponible</p>'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">
+            <i class="ri-close-line"></i>
+            Fermer
+          </button>
+          <button type="button" class="btn-primary" onclick="callPatient('${patient?.phone || ''}'); closeModal();">
+            <i class="ri-phone-line"></i>
+            Appeler
+          </button>
+          <button type="button" class="btn-primary" onclick="editAppointment('${appointment.id}'); closeModal();">
+            <i class="ri-edit-line"></i>
+            Modifier
+          </button>
+        </div>
+      </div>
+    `;
+    
+    const tabButtons = modal.querySelectorAll('.tab-btn');
+    const tabContents = modal.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const tabId = button.dataset.tab;
+        
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        
+        button.classList.add('active');
+        modal.querySelector(`#${tabId}-tab`).classList.add('active');
+      });
+    });
+    
+    const closeModal = () => {
+      document.body.removeChild(modal);
+      delete window.closeModal;
+    };
+    
+    modal.querySelector('.modal-close').onclick = closeModal;
+    modal.onclick = (e) => {
+      if (e.target === modal) closeModal();
+    };
+    
+    window.closeModal = closeModal;
+    document.body.appendChild(modal);
   }
+}
 
-  if (statusFilter) {
-    filteredAppointments = filteredAppointments.filter(a => a.status === statusFilter);
+function getPatientAppointmentHistory(patientId, appointments) {
+  const patientAppointments = appointments
+    .filter(a => a.patientId === patientId)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 10);
+  
+  if (patientAppointments.length === 0) {
+    return '<p class="no-history">Aucun rendez-vous précédent</p>';
   }
+  
+  return `
+    <div class="history-timeline">
+      ${patientAppointments.map(appointment => {
+        const appointmentDate = new Date(appointment.date);
+        return `
+          <div class="history-item">
+            <div class="history-date">
+              <span class="date">${appointmentDate.toLocaleDateString('fr-FR')}</span>
+              <span class="time">${appointmentDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+            </div>
+            <div class="history-content">
+              <h4>${appointment.type || 'Consultation'}</h4>
+              <p>${appointment.practitioner || 'Dr. Martin'} - ${appointment.room || 'Salle non spécifiée'}</p>
+              ${appointment.notes ? `<p class="notes">${appointment.notes}</p>` : ''}
+            </div>
+            <span class="status-badge ${appointment.status || 'scheduled'}">${getStatusText(appointment.status || 'scheduled')}</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
 
-  const appointmentsList = document.getElementById('appointmentsList');
-  if (appointmentsList) {
-    appointmentsList.innerHTML = filteredAppointments.length > 0 ? 
-      filteredAppointments.map(appointment => createAppointmentCard(appointment, patients)).join('') :
-      createEmptyAppointmentsState();
+function callPatient(phoneNumber) {
+  if (phoneNumber) {
+    window.open(`tel:${phoneNumber}`, '_self');
+  } else {
+    alert('Numéro de téléphone non disponible');
   }
 }
 
