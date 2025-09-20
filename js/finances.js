@@ -314,7 +314,7 @@ function createRevenueModal() {
         </div>
         <div class="input-group">
           <label class="input-label">Libellé</label>
-          <input type="text" id="label" placeholder="Ex: Consultation Dr. Martin">
+          <input type="text" id="label" placeholder="Ex: Consultation Lamiaa Ricouch">
         </div>
         <div class="input-group">
           <label class="input-label">Méthode de paiement</label>
