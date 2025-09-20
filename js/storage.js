@@ -73,6 +73,10 @@ export function addPatient(patient) {
   const newPatient = {
     id: generateId(),
     ...patient,
+    age: patient.age || 0,
+    bloodGroup: patient.bloodGroup || '',
+    lastVisit: patient.lastVisit || null,
+    status: patient.status || 'active',
     createdAt: new Date().toISOString()
   };
   patients.push(newPatient);
