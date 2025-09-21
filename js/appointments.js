@@ -26,7 +26,7 @@ export function showAppointments(root) {
         </div>
         <button id="addAppointmentBtn" class="btn-primary">
           <i class="ri-add-line"></i>
-          Nouveau RDV
+          <span class="btn-text">Nouveau RDV</span>
         </button>
       </div>
       
