@@ -59,7 +59,26 @@ export function setData(data) {
 
 export function getPatients() {
   const data = getData();
-  return data.patients;
+  const patients = data.patients || [];
+  
+  const migratedPatients = patients.map(patient => ({
+    ...patient,
+    fullName: patient.fullName || patient.name || 'Nom non renseigné',
+    age: patient.age || 0,
+    bloodGroup: patient.bloodGroup || '',
+    lastVisit: patient.lastVisit || null,
+    status: patient.status || 'active',
+    allergies: patient.allergies || '',
+    medications: patient.medications || '',
+    medicalHistory: patient.medicalHistory || '',
+    createdAt: patient.createdAt || new Date().toISOString()
+  }));
+  
+  if (migratedPatients.some((patient, index) => patient !== patients[index])) {
+    setPatients(migratedPatients);
+  }
+  
+  return migratedPatients;
 }
 
 export function setPatients(patients) {
@@ -77,6 +96,9 @@ export function addPatient(patient) {
     bloodGroup: patient.bloodGroup || '',
     lastVisit: patient.lastVisit || null,
     status: patient.status || 'active',
+    allergies: patient.allergies || '',
+    medications: patient.medications || '',
+    medicalHistory: patient.medicalHistory || '',
     createdAt: new Date().toISOString()
   };
   patients.push(newPatient);
@@ -107,7 +129,25 @@ export function deletePatient(id) {
 
 export function getAppointments() {
   const data = getData();
-  return data.appointments;
+  const appointments = data.appointments || [];
+  
+  const migratedAppointments = appointments.map(appointment => {
+    if (!appointment.patientName && appointment.patientId) {
+      const patients = data.patients || [];
+      const patient = patients.find(p => p.id === appointment.patientId);
+      return {
+        ...appointment,
+        patientName: patient ? (patient.fullName || patient.name || 'Nom non renseigné') : 'Patient inconnu'
+      };
+    }
+    return appointment;
+  });
+  
+  if (migratedAppointments.some((appointment, index) => appointment !== appointments[index])) {
+    setAppointments(migratedAppointments);
+  }
+  
+  return migratedAppointments;
 }
 
 export function setAppointments(appointments) {
