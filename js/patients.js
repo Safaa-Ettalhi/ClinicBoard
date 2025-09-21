@@ -306,118 +306,7 @@ function editPatient(patientId) {
   }
 }
 
-function showPatientHistory(patientId) {
-  const patients = getPatients();
-  const appointments = getAppointments();
-  const patient = patients.find(p => p.id === patientId);
-  
-  if (!patient) return;
-  
-  const patientAppointments = appointments.filter(a => a.patientId === patientId);
-  
-  patientAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
-  
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal-content modal-large">
-      <div class="modal-header">
-        <h2>Historique des rendez-vous - ${patient.fullName}</h2>
-        <button class="modal-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        ${patientAppointments.length === 0 ? `
-          <div class="empty-state">
-            <i class="ri-calendar-line"></i>
-            <h3>Aucun rendez-vous</h3>
-            <p>Ce patient n'a pas encore de rendez-vous enregistré</p>
-          </div>
-        ` : `
-          <div class="appointments-history">
-            ${patientAppointments.map(appointment => createHistoryItem(appointment)).join('')}
-          </div>
-        `}
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" onclick="closeModal()">Fermer</button>
-        <button type="button" class="btn-primary" onclick="createAppointmentForPatient('${patientId}')">
-          <i class="ri-calendar-add-line"></i>
-          Nouveau RDV
-        </button>
-      </div>
-    </div>
-  `;
-  
-  const closeModal = () => {
-    document.body.removeChild(modal);
-    delete window.closeModal;
-  };
-  
-  modal.querySelector('.modal-close').onclick = closeModal;
-  modal.onclick = (e) => {
-    if (e.target === modal) closeModal();
-  };
-  
-  window.closeModal = closeModal;
-  
-  window.createAppointmentForPatient = (patientId) => {
-    window.closeModal();
-    window.location.hash = '#appointments';
-    setTimeout(() => {
-      const addBtn = document.getElementById('addAppointmentBtn');
-      if (addBtn) {
-        addBtn.click();
-        setTimeout(() => {
-          const patientSelect = document.getElementById('patientId');
-          if (patientSelect) {
-            patientSelect.value = patientId;
-          }
-        }, 100);
-      }
-    }, 100);
-  };
-  
-  document.body.appendChild(modal);
-}
 
-function createHistoryItem(appointment) {
-  const appointmentDate = new Date(appointment.date);
-  const dateString = appointmentDate.toLocaleDateString('fr-FR');
-  const timeString = appointmentDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-  
-  const statusColors = {
-    'scheduled': '#3b82f6',
-    'completed': '#10b981',
-    'cancelled': '#ef4444',
-    'no-show': '#6b7280'
-  };
-  
-  const statusTexts = {
-    'scheduled': 'Programmé',
-    'completed': 'Terminé',
-    'cancelled': 'Annulé',
-    'no-show': 'No-show'
-  };
-  
-  return `
-    <div class="history-item">
-      <div class="history-date">
-        <span class="date">${dateString}</span>
-        <span class="time">${timeString}</span>
-      </div>
-      <div class="history-content">
-        <h4>${appointment.type || 'Consultation'}</h4>
-        <p>${appointment.practitioner || 'Dr. Ahmed Benali'} - ${appointment.room || 'Salle non spécifiée'}</p>
-        ${appointment.notes ? `<p class="notes">${appointment.notes}</p>` : ''}
-      </div>
-      <div class="history-status">
-        <span class="status-badge" style="background: ${statusColors[appointment.status] || '#3b82f6'}">
-          ${statusTexts[appointment.status] || 'Programmé'}
-        </span>
-      </div>
-    </div>
-  `;
-}
 
 function deletePatient(patientId) {
   if (confirm('Êtes-vous sûr de vouloir supprimer ce patient ?')) {
@@ -635,16 +524,13 @@ function createPatientViewModal(patient) {
     if (e.target === modal) closeModal();
   };
   
-  // Gestion des onglets
   modal.querySelectorAll('.tab-btn').forEach(btn => {
     btn.onclick = () => {
       const tabName = btn.dataset.tab;
       
-      // Désactiver tous les onglets
       modal.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       modal.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
-      // Activer l'onglet sélectionné
       btn.classList.add('active');
       modal.querySelector(`#${tabName}-tab`).classList.add('active');
     };
@@ -692,17 +578,6 @@ function handleSearch() {
   searchResults.textContent = `${filteredPatients.length} patient(s) trouvé(s)`;
 }
 
-function createEmptySearchState() {
-  return `
-    <div class="empty-state">
-      <div class="empty-icon">
-        <i class="ri-search-line"></i>
-      </div>
-      <h3>Aucun patient trouvé</h3>
-      <p>Essayez de modifier vos critères de recherche</p>
-    </div>
-  `;
-}
 
 function getStatusText(status) {
   const statusMap = {
