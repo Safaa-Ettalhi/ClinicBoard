@@ -215,7 +215,7 @@ function createAgendaView(appointments, patients, selectedDate) {
   
   const timeSlots = [];
   for (let hour = 8; hour < 18; hour++) {
-    for (let minute = 0; minute < 60; minute += 30) {
+    for (let minute = 0; minute < 60; minute += 15) {
       timeSlots.push({
         time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
         appointments: []
@@ -225,8 +225,8 @@ function createAgendaView(appointments, patients, selectedDate) {
   
   dayAppointments.forEach(appointment => {
     const appointmentTime = new Date(appointment.date);
-    const timeString = appointmentTime.toTimeString().substring(0, 5);
-    const slot = timeSlots.find(slot => slot.time === timeString);
+    const startTime = appointmentTime.toTimeString().substring(0, 5);
+    const slot = timeSlots.find(slot => slot.time === startTime);
     if (slot) {
       slot.appointments.push(appointment);
     }
@@ -304,11 +304,6 @@ function setupAppointmentsEventListeners() {
     tab.onclick = () => switchView(tab.dataset.view);
   });
   
-  document.getElementById('prevDay').onclick = () => navigateDate(-1);
-  document.getElementById('nextDay').onclick = () => navigateDate(1);
-  
-  document.getElementById('practitionerFilter').onchange = handleFilter;
-  document.getElementById('statusFilter').onchange = handleFilter;
   
   window.editAppointment = editAppointment;
   window.handleDeleteAppointment = handleDeleteAppointment;
@@ -316,7 +311,6 @@ function setupAppointmentsEventListeners() {
   window.callPatient = callPatient;
 }
 
-let currentDate = new Date();
 
 function switchView(view) {
   document.querySelectorAll('.view-tab').forEach(tab => {
@@ -327,68 +321,11 @@ function switchView(view) {
   document.getElementById('appointmentsList').classList.toggle('active', view === 'list');
   document.getElementById('agendaView').classList.toggle('active', view === 'agenda');
   
-  if (view === 'agenda') {
-    updateAgendaView();
-  }
 }
 
 
-function updateDateDisplay() {
-  document.getElementById('currentDate').textContent = 
-    currentDate.toLocaleDateString('fr-FR', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  
-  const appointments = getAppointments();
-  const dayAppointments = appointments.filter(a => {
-    const appointmentDate = new Date(a.date);
-    return appointmentDate.toDateString() === currentDate.toDateString();
-  });
-  
-  const appointmentsCount = document.querySelector('.appointments-count');
-  if (appointmentsCount) {
-    appointmentsCount.textContent = `${dayAppointments.length} rendez-vous programmés`;
-  }
-}
 
-function updateAppointmentsList() {
-  const appointments = getAppointments();
-  const patients = getPatients();
-  
-  const dayAppointments = appointments.filter(a => {
-    const appointmentDate = new Date(a.date);
-    return appointmentDate.toDateString() === currentDate.toDateString();
-  });
-  
-  const practitionerFilter = document.getElementById('practitionerFilter')?.value || '';
-  const statusFilter = document.getElementById('statusFilter')?.value || '';
-  
-  let filteredAppointments = dayAppointments;
-  
-  if (practitionerFilter) {
-    filteredAppointments = filteredAppointments.filter(a => a.practitioner === practitionerFilter);
-  }
-  
-  if (statusFilter) {
-    filteredAppointments = filteredAppointments.filter(a => a.status === statusFilter);
-  }
-  
-  const appointmentsList = document.getElementById('appointmentsList');
-  if (appointmentsList && appointmentsList.classList.contains('active')) {
-    appointmentsList.innerHTML = filteredAppointments.length > 0 ? 
-      filteredAppointments.map(appointment => createAppointmentCard(appointment, patients)).join('') :
-      createEmptyAppointmentsState();
-  }
-}
 
-function updateAgendaView() {
-  const appointments = getAppointments();
-  const patients = getPatients();
-  document.getElementById('agendaView').innerHTML = createAgendaView(appointments, patients, currentDate);
-}
 
 function showAddAppointmentModal() {
   const modal = createAppointmentModal();
@@ -415,7 +352,7 @@ function createAppointmentModal(appointment = null) {
             <option value="">Sélectionner un patient</option>
             ${patients.map(patient => 
               `<option value="${patient.id}" ${appointment?.patientId === patient.id ? 'selected' : ''}>
-                ${patient.fullName}
+                ${patient.fullName || patient.name || 'Nom non renseigné'}
               </option>`
             ).join('')}
           </select>
@@ -497,8 +434,13 @@ function createAppointmentModal(appointment = null) {
 }
 
 function handleAppointmentSubmit(appointmentId) {
+  const patientId = document.getElementById('patientId').value;
+  const patients = getPatients();
+  const selectedPatient = patients.find(p => p.id === patientId);
+  
   const formData = {
-    patientId: document.getElementById('patientId').value,
+    patientId: patientId,
+    patientName: selectedPatient ? (selectedPatient.fullName || selectedPatient.name || 'Nom non renseigné') : 'Patient inconnu',
     date: document.getElementById('dateTime').value,
     type: document.getElementById('type').value,
     practitioner: document.getElementById('practitioner').value,
@@ -526,8 +468,104 @@ function editAppointment(appointmentId) {
   const appointments = getAppointments();
   const appointment = appointments.find(a => a.id === appointmentId);
   if (appointment) {
-    const modal = createAppointmentModal(appointment);
+    const modal = createEditAppointmentModal(appointment);
     document.body.appendChild(modal);
+  }
+}
+
+function createEditAppointmentModal(appointment) {
+  const appointmentDate = new Date(appointment.date);
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Modifier le rendez-vous</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="editAppointmentForm">
+        <div class="input-group">
+          <label class="input-label">Patient</label>
+          <input type="text" value="${appointment.patientName}" readonly class="readonly-field">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Date et heure *</label>
+          <input type="datetime-local" id="dateTime" 
+                 value="${appointmentDate.toISOString().slice(0, 16)}" required>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Durée</label>
+          <select id="duration">
+            <option value="15" ${appointment.duration === 15 ? 'selected' : ''}>15 minutes</option>
+            <option value="30" ${appointment.duration === 30 ? 'selected' : ''}>30 minutes</option>
+            <option value="45" ${appointment.duration === 45 ? 'selected' : ''}>45 minutes</option>
+            <option value="60" ${appointment.duration === 60 ? 'selected' : ''}>1 heure</option>
+            <option value="90" ${appointment.duration === 90 ? 'selected' : ''}>1h30</option>
+            <option value="120" ${appointment.duration === 120 ? 'selected' : ''}>2 heures</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Statut</label>
+          <select id="status">
+            <option value="scheduled" ${appointment.status === 'scheduled' ? 'selected' : ''}>Programmé</option>
+            <option value="completed" ${appointment.status === 'completed' ? 'selected' : ''}>Terminé</option>
+            <option value="cancelled" ${appointment.status === 'cancelled' ? 'selected' : ''}>Annulé</option>
+            <option value="no-show" ${appointment.status === 'no-show' ? 'selected' : ''}>No-show</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeEditModal()">Annuler</button>
+          <button type="submit" class="btn-primary">Modifier</button>
+        </div>
+      </form>
+    </div>
+  `;
+  
+  const closeEditModal = () => {
+    document.body.removeChild(modal);
+    delete window.closeEditModal;
+  };
+  
+  modal.querySelector('.modal-close').onclick = closeEditModal;
+  modal.onclick = (e) => {
+    if (e.target === modal) closeEditModal();
+  };
+  
+  modal.querySelector('#editAppointmentForm').onsubmit = (e) => {
+    e.preventDefault();
+    handleEditAppointmentSubmit(appointment.id);
+  };
+  
+  window.closeEditModal = closeEditModal;
+  
+  return modal;
+}
+
+function handleEditAppointmentSubmit(appointmentId) {
+  const dateTime = document.getElementById('dateTime').value;
+  const duration = parseInt(document.getElementById('duration').value);
+  const status = document.getElementById('status').value;
+  
+  if (!dateTime) {
+    return;
+  }
+  
+  const updates = {
+    date: new Date(dateTime).toISOString(),
+    duration: duration,
+    status: status
+  };
+  
+  const updatedAppointment = updateAppointment(appointmentId, updates);
+  
+  if (updatedAppointment) {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) {
+      document.body.removeChild(modal);
+    }
+    
+    showAppointments(document.getElementById('root'));
   }
 }
 
@@ -538,17 +576,8 @@ function handleDeleteAppointment(appointmentId) {
   }
 }
 
-function navigateDate(direction) {
-  currentDate.setDate(currentDate.getDate() + direction);
-  updateDateDisplay();
-  updateAppointmentsList();
-  updateAgendaView();
-}
 
 
-function handleFilter() {
-  updateAppointmentsList();
-}
 
 function viewAppointment(appointmentId) {
   const appointments = getAppointments();
