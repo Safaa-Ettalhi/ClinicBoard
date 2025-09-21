@@ -264,6 +264,15 @@ export function getDashboardStats() {
   const todayAppointments = appointments.filter(a => {
     const appointmentDate = new Date(a.date);
     return appointmentDate.toDateString() === today;
+  }).map(appointment => {
+    if (!appointment.patientName && appointment.patientId) {
+      const patient = patients.find(p => p.id === appointment.patientId);
+      return {
+        ...appointment,
+        patientName: patient ? (patient.fullName || patient.name || 'Nom non renseigné') : 'Patient inconnu'
+      };
+    }
+    return appointment;
   });
   
   return {
