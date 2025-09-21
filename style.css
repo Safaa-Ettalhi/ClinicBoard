@@ -69,68 +69,6 @@ body.with-navigation #root {
   padding: 20px 0;
 }
 
-.appointments-history {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.history-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-  border-left: 4px solid #3b82f6;
-}
-
-.history-date {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 80px;
-}
-
-.history-date .date {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 14px;
-}
-
-.history-date .time {
-  color: #64748b;
-  font-size: 12px;
-}
-
-.history-content {
-  flex: 1;
-}
-
-.history-content h4 {
-  margin: 0 0 4px 0;
-  color: #1e293b;
-  font-size: 16px;
-}
-
-.history-content p {
-  margin: 0 0 4px 0;
-  color: #64748b;
-  font-size: 14px;
-}
-
-.history-content .notes {
-  font-style: italic;
-  color: #475569;
-}
-
-.history-status .status-badge {
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
 
 
 .agenda-timeline {
@@ -3764,6 +3702,7 @@ textarea {
   }
   
   .agenda-time-slot {
+    display: grid;
     grid-template-columns: 70px 1fr;
     min-height: 45px;
     border-bottom: 1px solid #f1f5f9;
@@ -3788,6 +3727,7 @@ textarea {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: relative;
   }
   
   .agenda-appointment {
@@ -3798,6 +3738,7 @@ textarea {
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
+  
   
   .agenda-appointment:last-child {
     margin-bottom: 0;
@@ -6576,4 +6517,11 @@ textarea {
   .user-role {
     font-size: 11px;
   }
+}
+
+.readonly-field {
+  background-color: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+  border: 1px solid #ddd;
 }
