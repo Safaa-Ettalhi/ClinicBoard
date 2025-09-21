@@ -7,6 +7,7 @@ export function showAppointments(root) {
   const appointments = getAppointments();
   const patients = getPatients();
   const today = new Date();
+  currentSelectedDate = new Date(today);
   const todayAppointments = appointments.filter(a => {
     const appointmentDate = new Date(a.date);
     return appointmentDate.toDateString() === today.toDateString();
@@ -297,6 +298,8 @@ function getStatusText(status) {
   return statusMap[status] || 'PROGRAMMÉ';
 }
 
+let currentSelectedDate = new Date();
+
 function setupAppointmentsEventListeners() {
   document.getElementById('addAppointmentBtn').onclick = showAddAppointmentModal;
   
@@ -304,11 +307,73 @@ function setupAppointmentsEventListeners() {
     tab.onclick = () => switchView(tab.dataset.view);
   });
   
+  const prevDayBtn = document.getElementById('prevDay');
+  const nextDayBtn = document.getElementById('nextDay');
+  
+  if (prevDayBtn) {
+    prevDayBtn.onclick = () => navigateDate(-1);
+  }
+  
+  if (nextDayBtn) {
+    nextDayBtn.onclick = () => navigateDate(1);
+  }
   
   window.editAppointment = editAppointment;
   window.handleDeleteAppointment = handleDeleteAppointment;
   window.viewAppointment = viewAppointment;
   window.callPatient = callPatient;
+}
+
+function navigateDate(direction) {
+  currentSelectedDate.setDate(currentSelectedDate.getDate() + direction);
+  updateDateDisplay();
+  refreshAppointmentsView();
+}
+
+function updateDateDisplay() {
+  const currentDateElement = document.getElementById('currentDate');
+  const appointmentsCountElement = document.querySelector('.appointments-count');
+  
+  if (currentDateElement) {
+    currentDateElement.textContent = currentSelectedDate.toLocaleDateString('fr-FR', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+  
+  if (appointmentsCountElement) {
+    const appointments = getAppointments();
+    const dayAppointments = appointments.filter(a => {
+      const appointmentDate = new Date(a.date);
+      return appointmentDate.toDateString() === currentSelectedDate.toDateString();
+    });
+    appointmentsCountElement.textContent = `${dayAppointments.length} rendez-vous programmés`;
+  }
+}
+
+function refreshAppointmentsView() {
+  const appointments = getAppointments();
+  const patients = getPatients();
+  
+  const dayAppointments = appointments.filter(a => {
+    const appointmentDate = new Date(a.date);
+    return appointmentDate.toDateString() === currentSelectedDate.toDateString();
+  });
+  
+  const appointmentsList = document.querySelector('.appointments-list');
+  const agendaView = document.querySelector('.agenda-view');
+  
+  if (appointmentsList && appointmentsList.classList.contains('active')) {
+    appointmentsList.innerHTML = dayAppointments.length > 0 ? 
+      dayAppointments.map(appointment => createAppointmentCard(appointment, patients)).join('') :
+      createEmptyAppointmentsState();
+  }
+  
+  if (agendaView && agendaView.classList.contains('active')) {
+    agendaView.innerHTML = createAgendaView(appointments, patients, currentSelectedDate);
+  }
 }
 
 
